@@ -371,9 +371,13 @@ export const StrategySection = () => {
         {modeStrategySection("external_managed", "concurrent")}
         {modeStrategySection("external_usesyncexternalstore", "concurrent")}
         {modeStrategySection("context", "concurrent")}
+        {modeStrategySection("xstate_react", "concurrent")}
+        {modeStrategySection("custom_xstate_react", "concurrent")}
         {modeStrategySection("external_managed", "sync")}
         {modeStrategySection("external_usesyncexternalstore", "sync")}
         {modeStrategySection("context", "sync")}
+        {modeStrategySection("xstate_react", "sync")}
+        {modeStrategySection("custom_xstate_react", "sync")}
       </div>
     </>
   );

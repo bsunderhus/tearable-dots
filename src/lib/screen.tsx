@@ -10,6 +10,8 @@ import copy from "../copy";
 import * as ContextStrategy from "../strategies/context";
 import * as UseSyncExternalStoreStrategy from "../strategies/use-sync-external-store";
 import * as ExternalStrategy from "../strategies/external";
+import * as XStateReactStrategy from '../strategies/xstate_react'
+import * as CustomXStateReactStrategy from '../strategies/custom_xstate_react'
 import {
   Banner,
   MainAbout,
@@ -32,9 +34,13 @@ export const getStrategyModule = (state: string) => {
     context: ContextStrategy,
     external_managed: ExternalStrategy,
     external_usesyncexternalstore: UseSyncExternalStoreStrategy,
+    xstate_react: XStateReactStrategy,
+    custom_xstate_react: CustomXStateReactStrategy
   }[state] as typeof ContextStrategy &
     typeof ExternalStrategy &
-    typeof UseSyncExternalStoreStrategy;
+    typeof UseSyncExternalStoreStrategy &
+    typeof XStateReactStrategy &
+    typeof CustomXStateReactStrategy
 
   return {
     Root,

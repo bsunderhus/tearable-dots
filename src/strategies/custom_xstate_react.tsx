@@ -30,23 +30,19 @@ export const useChangeHandler = () => {
   };
 };
 
-export const useColor = () => {
+export const useColor = (startTransition?: typeof React.startTransition) => {
   const actorRef = React.useContext(context);
   if (!actorRef) {
     throw new Error('deu ruim')
   }
-  const color = useSnapshot(actorRef, (snapshot) => snapshot.context)
+  const color = useSnapshot(actorRef, (snapshot) => snapshot.context, {startTransition})
   return color;
 };
 
 export const useUnsafeChangeHandler = () => {
-  const actorRef = React.useContext(context);
-  if (!actorRef) {
-    throw new Error('deu ruim')
-  }
+  const actorRef = React.useContext(context)
   return (redOrBlue: "red" | "blue") => {
-    // const snapshot = actorRef.getSnapshot();
-    // snapshot.context = redOrBlue;
+    (actorRef as any)._snapshot.context = redOrBlue
   };
 };
 
@@ -88,54 +84,53 @@ export function useActor<Logic extends AnyActorLogic>(
 }
 
 
-interface ActorExternalStore
+interface ExternalStore
   extends Pick<AnyActor, "getSnapshot" | "subscribe"> {}
 
-type ActorSnapshot<Actor extends ActorExternalStore> = ReturnType<
+type SnapshotValue<Actor extends ExternalStore> = ReturnType<
   Actor["getSnapshot"]
 >;
 
+interface UseSnapshotOptions<V> {
+  isEqual?(a: V, b: V): boolean
+  startTransition?(scope: React.TransitionFunction): void
+}
+
 export function useSnapshot<
-  Actor extends ActorExternalStore,
-  V = ActorSnapshot<Actor>,
+  Actor extends ExternalStore,
+  Selection = SnapshotValue<Actor>,
 >(
   actor: Actor,
-  selector: (snapshot: ActorSnapshot<Actor>) => V = id,
-  compare: (a: V, b: V) => boolean = defaultCompare,
-): V {
+  selector: (snapshot: SnapshotValue<Actor>) => Selection = id,
+  options: UseSnapshotOptions<Selection> = {}
+): Selection {
+  const {isEqual = Object.is, startTransition = defaultStartTransition} = options
   const [value, setValue] = React.useState(() => {
-    console.log('useState init')
     return selector(actor.getSnapshot())
   });
 
   React.useEffect(
     () => {
-      console.log('useEffect')
-      const subscription = actor.subscribe((snapshot: ActorSnapshot<Actor>) => {
-        setValue(curr => {
-          const nextValue = selector(snapshot);
-          if (compare(curr, nextValue)) {
-            return curr
-          }
-          return nextValue
-        });
-      }, console.log, console.log)
-      return () => {
-        console.log('cleanUp')
-        subscription.unsubscribe()
-      }
+      const {unsubscribe} = actor.subscribe((snapshot: SnapshotValue<Actor>) => {
+        const nextValue = selector(snapshot);
+        startTransition(() => {
+          setValue(currentValue => isEqual(currentValue, nextValue) ? currentValue : nextValue);
+        })
+      })
+      return unsubscribe
     },
     [actor],
   );
 
-  return value;
-}
 
-function defaultCompare<T>(a: T, b: T) {
-  return a === b
+  return value;
 }
 
 function id<T>(x: T): T {
   return x
 }
 
+
+function defaultStartTransition(cb: React.TransitionFunction) {
+  cb()
+}

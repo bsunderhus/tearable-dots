@@ -15,8 +15,9 @@ export const useColor = () => {
 };
 
 export const useUnsafeChangeHandler = () => {
+  const context = useContext(ctx);
   return (redOrBlue: "red" | "blue") => {
-    (ctx as any).color = redOrBlue;
+    (context).color = redOrBlue;
   };
 };
 

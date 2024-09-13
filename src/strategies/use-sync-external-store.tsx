@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const store = {
   color: "red",
@@ -15,11 +15,11 @@ export const useChangeHandler = () => {
 
 export const useColor = () => {
   const syncColor = useSyncExternalStore(
-    (listener) => {
+    useCallback((listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
-    },
-    () => store.color
+    }, []),
+    useCallback(() => store.color, [])
   );
 
   return syncColor;

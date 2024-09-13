@@ -11,12 +11,16 @@ const copy = {
     external_usesyncexternalstore:
       "external store tracked via useSyncExternalStore",
     context: "store managed withing React's context API",
+    xstate_react: "store managed with @xstate/react library",
+    custom_xstate_react: "store managed by custom xstate react implementation"
   },
   names: {
     external_managed: "external store tracked via `useEffect` and `useState`",
     external_usesyncexternalstore:
       "external store tracked via useSyncExternalStore",
     context: "store managed withing React's context API",
+    xstate_react: "store managed with @xstate/react library",
+    custom_xstate_react: "store managed by custom xstate react implementation"
   },
   about: (
     <p
@@ -47,11 +51,15 @@ const copy = {
     external_managed: true,
     external_usesyncexternalstore: false,
     context: true,
+    xstate_react: false,
+    custom_xstate_react: 'if event + state update happens in the same task'
   },
   will_tear: {
     external_managed: true,
     external_usesyncexternalstore: false,
     context: false,
+    xstate_react: false,
+    custom_xstate_react: false
   },
   strategies: {
     external_managed: {
@@ -64,6 +72,14 @@ const copy = {
     },
     context: {
       concurrent: `This uses React's context API to manage state and will NOT cause tearing. It also works with React's new transition APIs. The reason why this approach is not more popular, though, is because React's \`useContext\` does not allow fine-grained reactivity and will cause unnecessary rerenders in components that only need to access a slice of the store.`,
+      sync: `This uses React's context API to manage global state and will NOT cause tearing. In sync mode (and probably in concurrent mode too), this is never a recommended way of managing global state due to rerender concerns.`,
+    },
+    xstate_react: {
+      concurrent: `This uses \`useSyncExternalStore\` under the hood and will NOT cause tearing. The tradeoff is that \`useSyncExternalStore\` will fallback to rendering in sync mode if it detects inconsistencies. It also will not work with React's new transition APIs. This is easy to see because the button never turns grey after the user clicks it.`,
+      sync: `This works in synchronous mode but isn't necessary since synchronous renders should result in the consistent state.`,
+    },
+    custom_xstate_react: {
+      concurrent: `This uses React's context API with \`useState\` and \`useEffect\` under the hood and will NOT cause tearing. It also works with React's new transition APIs. The reason why this approach is not more popular, though, is because React's \`useContext\` does not allow fine-grained reactivity and will cause unnecessary rerenders in components that only need to access a slice of the store.`,
       sync: `This uses React's context API to manage global state and will NOT cause tearing. In sync mode (and probably in concurrent mode too), this is never a recommended way of managing global state due to rerender concerns.`,
     },
   },
